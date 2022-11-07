@@ -8,11 +8,11 @@
 using namespace std;
 using namespace std::chrono;
 
-// Stores convex hull
+// Convex hull
 set<pair<int, int>> hull;
 
 // Find which side point(p) is in from line(p1, p2)
-int findSide(pair<int, int> p1, pair<int, int> p2, pair<int, int> p)
+int FindSide(pair<int, int> p1, pair<int, int> p2, pair<int, int> p)
 {
 	int val = (p.second - p1.second) * (p2.first - p1.first) - (p2.second - p1.second) * (p.first - p1.first);
 
@@ -23,17 +23,19 @@ int findSide(pair<int, int> p1, pair<int, int> p2, pair<int, int> p)
 	return 0;
 }
 
-// End points of line L are p1 and p2. side can have value
-// 1 or -1 specifying each of the parts made by the line L
-void quickHull(pair<int, int> a[], int n, pair<int, int> p1, pair<int, int> p2, int side)
+// FindHull
+// Checks for maximum distance from point in Sk to line (p1, p2)
+// If then recurse with the 2 new line (found point, p1) and (found point, p2)
+// else it is part of hull
+void FindHull(pair<int, int> Sk[], int n, pair<int, int> p1, pair<int, int> p2, int side)
 {
-    // Find the farthest point from line p1, p2 in a[]
+    // Find the farthest point from line p1, p2 in Sk[]
 	int ind = -1;
 	int max_dist = 0;
 	for (int i=0; i<n; i++)
 	{
-		int temp = abs ((a[i].second - p1.second) * (p2.first - p1.first) - (p2.second - p1.second) * (a[i].first - p1.first));
-		if (findSide(p1, p2, a[i]) == side && temp > max_dist)
+		int temp = abs ((Sk[i].second - p1.second) * (p2.first - p1.first) - (p2.second - p1.second) * (Sk[i].first - p1.first));
+		if (FindSide(p1, p2, Sk[i]) == side && temp > max_dist)
 		{
 			ind = i;
 			max_dist = temp;
@@ -48,17 +50,19 @@ void quickHull(pair<int, int> a[], int n, pair<int, int> p1, pair<int, int> p2, 
 		return;
 	}
 
-	// Recur for the two parts divided by a[ind]
-	quickHull(a, n, a[ind], p1, -findSide(a[ind], p1, p2));
-	quickHull(a, n, a[ind], p2, -findSide(a[ind], p2, p1));
+	// Recurse for the two parts divided by a[ind]
+	FindHull(Sk, n, Sk[ind], p1, -FindSide(Sk[ind], p1, p2));
+	FindHull(Sk, n, Sk[ind], p2, -FindSide(Sk[ind], p2, p1));
 }
 
-void printHull(pair<int, int> a[], int n)
+// QuickHull
+// Given set of points and its array size, print out its convext hull
+void QuickHull(pair<int, int> S[], int n)
 {
     // Base case
 	if (n < 3)
 	{
-		cout << "Convex hull not possible\n";
+		cout << "Only 3 points\n";
 		return;
 	}
     
@@ -66,22 +70,19 @@ void printHull(pair<int, int> a[], int n)
 	int min_x = 0, max_x = 0;
 	for (int i=1; i<n; i++)
 	{
-		if (a[i].first < a[min_x].first)
+		if (S[i].first < S[min_x].first)
 			min_x = i;
-		if (a[i].first > a[max_x].first)
+		if (S[i].first > S[max_x].first)
 			max_x = i;
 	}
     
     // Find hull
-	quickHull(a, n, a[min_x], a[max_x], 1);
-	quickHull(a, n, a[min_x], a[max_x], -1);
+	FindHull(S, n, S[min_x], S[max_x], 1);
+	FindHull(S, n, S[min_x], S[max_x], -1);
 
 	cout << "The points in Convex Hull are:\n";
-	while (!hull.empty())
-	{
-		cout << "(" <<( *hull.begin()).first << ", "
-			<< (*hull.begin()).second << ") ";
-		hull.erase(hull.begin());
+	for(auto x : hull){
+	    cout << "(" << x.first << ", " << x.second << "), ";
 	}
 	cout << endl;
 }
@@ -101,7 +102,7 @@ int main()
 	 // Get starting timepoint
     auto start = high_resolution_clock::now();
 	int n = sizeof(a)/sizeof(a[0]);
-	printHull(a, n);
+	QuickHull(a, n);
 	// Get ending timepoint
     auto stop = high_resolution_clock::now();
     
@@ -115,7 +116,7 @@ int main()
     // Get starting timepoint
     start = high_resolution_clock::now();
 	n = sizeof(b)/sizeof(b[0]);
-	printHull(b, n);
+	QuickHull(b, n);
 	// Get ending timepoint
     stop = high_resolution_clock::now();
     duration = duration_cast<microseconds>(stop - start);
@@ -128,7 +129,7 @@ int main()
     // Get starting timepoint
     start = high_resolution_clock::now();
 	n = sizeof(c)/sizeof(c[0]);
-	printHull(c, n);
+	QuickHull(c, n);
 	// Get ending timepoint
     stop = high_resolution_clock::now();
     duration = duration_cast<microseconds>(stop - start);

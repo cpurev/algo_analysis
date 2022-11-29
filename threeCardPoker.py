@@ -25,7 +25,7 @@ def indentifier(combo):
         flush = True
     straight = False
     sorted(combo)
-    if(combo[1].value == combo[2].value + 1 and combo[2].value == combo[3].value + 1 ):
+    if(combo[2].value == (combo[1].value + 1) and combo[1].value == (combo[0].value + 1 )):
         straight = True
     if(combo[0].value == 1 and combo[1].value == 12 and combo[2].value == 13):
         straight = True
